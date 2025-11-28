@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using AYellowpaper.SerializedCollections;
+
 #if ODIN_INSPECTOR
 using Sirenix.OdinInspector;
 #endif
@@ -66,36 +68,31 @@ namespace BattleTurn.UI_Panel.Runtime
 #endif
 #if ODIN_INSPECTOR
         [ReadOnly]
-        [ShowInInspector]
         [FoldoutGroup(DEBUGS, Order = 99)]
 #endif
-        private Dictionary<string, PanelInfo> _panels = new();
+        private SerializedDictionary<string, PanelInfo> _panels = new();
 #if ODIN_INSPECTOR
         [ReadOnly]
-        [ShowInInspector]
         [FoldoutGroup(DEBUGS, Order = 99)]
 #endif
-        private Dictionary<string, List<BasePanel>> _shownPopupMap = new();
+        private SerializedDictionary<string, List<BasePanel>> _shownPopupMap = new();
 #if ODIN_INSPECTOR
         [ReadOnly]
-        [ShowInInspector]
         [FoldoutGroup(DEBUGS, Order = 99)]
 #endif
-        private Dictionary<string, BasePanel> _shownScreenMap = new();
+        private SerializedDictionary<string, BasePanel> _shownScreenMap = new();
 
 #if ODIN_INSPECTOR
         [ReadOnly]
-        [ShowInInspector]
         [FoldoutGroup(DEBUGS, Order = 99)]
 #endif
-        private Dictionary<string, BasePanel> _recycleScreenMap = new();
+        private SerializedDictionary<string, BasePanel> _recycleScreenMap = new();
 
 #if ODIN_INSPECTOR
         [ReadOnly]
-        [ShowInInspector]
         [FoldoutGroup(DEBUGS, Order = 99)]
 #endif
-        private Dictionary<string, List<BasePanel>> _recyclePopupMap = new();
+        private SerializedDictionary<string, List<BasePanel>> _recyclePopupMap = new();
 
         #region Properties
         public Camera UICamera
@@ -249,7 +246,7 @@ namespace BattleTurn.UI_Panel.Runtime
         private void InitDict()
         {
             if (_panels == null)
-                _panels = new Dictionary<string, PanelInfo>();
+                _panels = new SerializedDictionary<string, PanelInfo>();
 
             if (_panels.Count == _panelMap.Count)
             {
