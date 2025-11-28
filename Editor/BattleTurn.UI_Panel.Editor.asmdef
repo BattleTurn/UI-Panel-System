@@ -1,0 +1,20 @@
+{
+    "name": "BattleTurn.UI_Panel.Editor",
+    "rootNamespace": "",
+    "references": [
+        "BattleTurn.UI_Panel.Runtime"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": true,
+    "precompiledReferences": [
+        "Sirenix.OdinInspector.Editor.dll"
+    ],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

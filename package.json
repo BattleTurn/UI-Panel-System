@@ -1,0 +1,22 @@
+{
+  "name": "battleturn.ui_panel_system",
+  "displayName": "UI Panel System",
+  "version": "1.0.0",
+  "unity": "2022.1",
+  "description": "A set of UI panel management tools.",
+  "keywords": [
+    "UI",
+    "Panel",
+    "System",
+    "Management"
+  ],
+  "repository": {
+    "url": "https://github.com/BattleTurn/UI-Panel-System.git",
+    "type": "git"
+  },
+  "hidden": false,
+  "author": {
+    "name": "BattleTurn",
+    "url": "https://github.com/BattleTurn"
+  }
+}
