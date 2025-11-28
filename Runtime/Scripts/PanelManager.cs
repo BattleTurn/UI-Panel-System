@@ -143,32 +143,46 @@ namespace BattleTurn.UI_Panel.Runtime
                 return null;
             }
 
+            Debug.Log($"[PanelManager] Show id='{id}', prefab='{panelInfo.Panel?.name}', type='{panelInfo.Type}'");
+
             switch (panelInfo.Type)
             {
                 case PanelType.Screen:
                     {
-                        T screen;
+                        T screen = null;
                         if (_recycleScreenMap.ContainsKey(panelInfo.Id))
                         {
                             screen = _recycleScreenMap[panelInfo.Id] as T;
-                            Debug.Log("Reusing existing screen instance: " + screen.gameObject.name);
+                            Debug.Log("Reusing existing screen instance: " + (screen ? screen.gameObject.name : "<null>"));
                             _recycleScreenMap.Remove(panelInfo.Id);
-                            screen.transform.SetAsLastSibling();
+                            if (screen) screen.transform.SetAsLastSibling();
                         }
                         else if (_shownScreenMap.ContainsKey(panelInfo.Id))
                         {
                             screen = _shownScreenMap[panelInfo.Id] as T;
-                            Debug.Log("Screen instance already shown: " + screen.gameObject.name);
-                            screen.transform.SetAsLastSibling();
+                            Debug.Log("Screen instance already shown: " + (screen ? screen.gameObject.name : "<null>"));
+                            if (screen) screen.transform.SetAsLastSibling();
                         }
                         else
                         {
-                            Debug.Log("Creating new screen instance: " + panelInfo.Panel.gameObject.name);
-                            screen = Instantiate(panelInfo.Panel, _container) as T;
-                            screen.panelManager = this;
-                            screen.Id = panelInfo.Id;
-                            screen.gameObject.name = panelInfo.Panel.gameObject.name + "__Screen";
-                            screen.ShowInternal();
+                            Debug.Log("Creating new screen instance from prefab: " + panelInfo.Panel.gameObject.name);
+                            var instance = Instantiate(panelInfo.Panel, _container);
+                            instance.panelManager = this;
+                            instance.Id = panelInfo.Id;
+                            instance.gameObject.name = $"{panelInfo.Panel.gameObject.name}__{panelInfo.Id}__Screen";
+                            screen = instance as T;
+                            if (screen == null)
+                            {
+                                Debug.LogError($"[PanelManager] Prefab for id '{panelInfo.Id}' is '{instance.GetType().Name}', not '{typeof(T).Name}'.");
+                                Destroy(instance.gameObject);
+                                return null;
+                            }
+                        }
+
+                        if (screen == null)
+                        {
+                            Debug.LogError($"[PanelManager] Screen is null for id '{panelInfo.Id}'.");
+                            return null;
                         }
 
                         screen.ShowInternal();
@@ -182,25 +196,34 @@ namespace BattleTurn.UI_Panel.Runtime
 
                         BasePanel popup;
                         bool isDuplicate = _shownPopupMap[panelInfo.Id].Count > 0;
+
                         if (_recyclePopupMap.ContainsKey(panelInfo.Id) && _recyclePopupMap[panelInfo.Id].Count > 0)
                         {
                             popup = _recyclePopupMap[panelInfo.Id].FirstOrDefault();
                             _recyclePopupMap[panelInfo.Id].Remove(popup);
-                            Debug.Log("Reusing existing popup instance: " + popup.gameObject.name);
+                            Debug.Log("Reusing existing popup instance: " + (popup ? popup.gameObject.name : "<null>"));
                         }
                         else
                         {
-                            Debug.Log("Creating new popup instance: " + panelInfo.Panel.gameObject.name);
+                            Debug.Log("Creating new popup instance from prefab: " + panelInfo.Panel.gameObject.name);
                             popup = Instantiate(panelInfo.Panel, _container);
                             popup.panelManager = this;
-                            popup.Id = panelInfo.Id; // keep logical id
-                            popup.gameObject.name = panelInfo.Panel.gameObject.name + (isDuplicate ? "__Dup" : "__Popup");
+                            popup.Id = panelInfo.Id;
+                            popup.gameObject.name = $"{panelInfo.Panel.gameObject.name}__{panelInfo.Id}__{(isDuplicate ? "Dup" : "Popup")}";
                         }
 
-                        _shownPopupMap[panelInfo.Id].Add(popup);
-                        popup.transform.SetAsLastSibling();
-                        popup.ShowInternal();
-                        return popup as T;
+                        var typed = popup as T;
+                        if (typed == null)
+                        {
+                            Debug.LogError($"[PanelManager] Prefab for id '{panelInfo.Id}' is '{popup?.GetType().Name}', not '{typeof(T).Name}'.");
+                            if (popup != null) Destroy(popup.gameObject);
+                            return null;
+                        }
+
+                        _shownPopupMap[panelInfo.Id].Add(typed);
+                        typed.transform.SetAsLastSibling();
+                        typed.ShowInternal();
+                        return typed;
                     }
                 default:
                     Debug.LogError($"[PanelManager] Unknown panel type {panelInfo.Type} for panel ID '{panelInfo.Id}'.");
@@ -248,18 +271,25 @@ namespace BattleTurn.UI_Panel.Runtime
             if (_panels == null)
                 _panels = new SerializedDictionary<string, PanelInfo>();
 
-            if (_panels.Count == _panelMap.Count)
-            {
-                return;
-            }
-
+            // Always rebuild to avoid stale cache when you edit _panelMap in Inspector
             _panels.Clear();
+
+            var seen = new HashSet<string>();
             foreach (var panelInfo in _panelMap)
             {
-                if (panelInfo.Panel != null)
+                if (panelInfo == null || panelInfo.Panel == null || string.IsNullOrEmpty(panelInfo.Id))
                 {
-                    _panels[panelInfo.Id] = panelInfo;
+                    Debug.LogWarning("[PanelManager] Skipped invalid panel entry.");
+                    continue;
                 }
+
+                if (!seen.Add(panelInfo.Id))
+                {
+                    Debug.LogError($"[PanelManager] Duplicate Id '{panelInfo.Id}' in panel map.");
+                    continue;
+                }
+
+                _panels[panelInfo.Id] = panelInfo;
             }
         }
 
