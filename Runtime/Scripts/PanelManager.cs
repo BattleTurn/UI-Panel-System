@@ -423,15 +423,15 @@ namespace BattleTurn.UI_Panel.Runtime
             return true;
         }
 
-        public bool TryGet<T>(BasePanel basePanel, out T panel) where T : BasePanel
+        public bool TryGet<T>(string panelName, out T panel) where T : BasePanel
         {
             panel = null;
-            if (_shownPopupMap.ContainsKey(basePanel.Id))
+            if (_shownPopupMap.ContainsKey(panelName))
             {
-                var list = _shownPopupMap[basePanel.Id];
+                var list = _shownPopupMap[panelName];
                 if (list != null && list.Count > 0)
                 {
-                    var found = _shownPopupMap[basePanel.Id].Find(p => p == basePanel);
+                    var found = _shownPopupMap[panelName].Find(p => p.Id == panelName && p is T && p.gameObject.activeInHierarchy);
                     if (found != null)
                     {
                         panel = (T)found;
@@ -441,9 +441,9 @@ namespace BattleTurn.UI_Panel.Runtime
                 return false;
             }
 
-            if (_shownScreenMap.ContainsKey(basePanel.Id))
+            if (_shownScreenMap.ContainsKey(panelName))
             {
-                var screen = _shownScreenMap[basePanel.Id];
+                var screen = _shownScreenMap[panelName];
                 if (screen is T)
                 {
                     panel = (T)screen;
